@@ -1,0 +1,14 @@
+.modal label {
+  font-size: 1.5rem;
+}
+
+.movie-modal__input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.modal textarea {
+  resize: vertical;
+  min-height: 70px;
+}

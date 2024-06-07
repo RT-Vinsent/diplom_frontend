@@ -1,0 +1,175 @@
+.buttons {
+  margin-top: 10px;
+}
+
+.button {
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.24), 0px 0px 3px rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  border: none;
+  background-color: #FFFFFF;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 1.4rem;
+  transition-property: background-color;
+  transition-duration: .5s;
+  transition-timing-function: ease;
+  cursor: pointer;
+}
+
+.button:hover,
+.button:focus {
+  background-color: #EEEAF1;
+  outline: none;
+}
+
+.button:active {
+  position: relative;
+  top: 2px;
+  background-color: #63536C;
+  color: #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+}
+
+.button+.button {
+  margin-left: 12px;
+}
+
+.button-regular {
+  color: #63536C;
+  padding: 12px 32px;
+  margin-top: 17px;
+}
+
+.button-accent {
+  color: #FFFFFF;
+  background-color: #16A6AF;
+  padding: 12px 32px;
+  margin-top: 17px;
+}
+
+.button-accent:hover,
+.button-accent:focus {
+  background-color: #2FC9D2;
+  outline: none;
+}
+
+.button-accent:active {
+  position: relative;
+  top: 2px;
+  background-color: #146C72;
+  color: #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+} 
+
+.button-trash {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  vertical-align: text-top;
+  margin-left: 5px;
+}
+
+.button-trash::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background-image: url("../../../public/i/trash-sprite.png");
+  background-position: 0 0;
+  background-size: 24px 12px;
+  background-repeat: no-repeat;
+}
+
+.button-trash:active::before {
+  background-position: -12px 0;
+}
+
+
+
+
+
+
+/* КНОПКИ */
+
+/* 
+.conf-step__button {
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.24), 0px 0px 3px rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  border: none;
+  background-color: #FFFFFF;
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 1.4rem;
+  transition-property: background-color;
+  transition-duration: .5s;
+  transition-timing-function: ease;
+  cursor: pointer;
+}
+.conf-step__button:hover,
+.conf-step__button:focus {
+  background-color: #EEEAF1;
+  outline: none;
+}
+.conf-step__button:active {
+  position: relative;
+  top: 2px;
+  background-color: #63536C;
+  color: #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+}
+.conf-step__button+.conf-step__button {
+  margin-left: 12px;
+}
+.conf-step__buttons {
+  margin-top: 10px;
+}
+.conf-step__button-regular {
+  color: #63536C;
+  padding: 12px 32px;
+  margin-top: 17px;
+}
+.conf-step__button.conf-step__button-accent {
+  color: #FFFFFF;
+  background-color: #16A6AF;
+  padding: 12px 32px;
+  margin-top: 17px;
+}
+.conf-step__button.conf-step__button-accent:hover,
+.conf-step__button.conf-step__button-accent:focus {
+  background-color: #2FC9D2;
+  outline: none;
+}
+.conf-step__button.conf-step__button-accent:active {
+  position: relative;
+  top: 2px;
+  background-color: #146C72;
+  color: #FFFFFF;
+  box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
+}
+
+.conf-step__button-trash {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  vertical-align: text-top;
+  margin-left: 5px;
+}
+
+.conf-step__button-trash::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 12px;
+  height: 12px;
+  background-image: url("../../../public/i/trash-sprite.png");
+  background-position: 0 0;
+  background-size: 24px 12px;
+  background-repeat: no-repeat;
+}
+
+.conf-step__button-trash:active::before {
+  background-position: -12px 0;
+} */

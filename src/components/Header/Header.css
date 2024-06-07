@@ -1,0 +1,49 @@
+.page-header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  padding: 25px 1.4rem;
+  margin: 0 auto;
+  width: 100%;
+  text-transform: uppercase;
+  color: #FFFFFF;
+}
+
+/* .page-header__logo {
+  
+} */
+
+.page-header__title {
+  margin: 0;
+  font-weight: 900;
+  font-size: 3.4rem;
+}
+
+.page-header__subtitle {
+  font-size: 1rem;
+  letter-spacing: 0.46em;
+}
+
+.page-header__title span {
+  font-weight: 100;
+}
+
+.page-header__button,
+.page-header__title a {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+
+.page-header__button {
+  padding: 10px;
+  font-size: 1.5rem;
+  letter-spacing: 0.46em;
+}
+
+@media screen and (min-width: 990px) {
+  .page-header {
+    width: 990px;
+  }
+}

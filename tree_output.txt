@@ -1,0 +1,151 @@
+PATH:.
+│   .env
+│   .gitignore
+│   package-lock.json
+│   package.json
+│   README.md
+│   tree_output.txt
+│   tsconfig.json
+│   
+├───node_modules
+│           
+├───public
+│   │   favicon.ico
+│   │   index.html
+│   │   logo192.png
+│   │   logo512.png
+│   │   manifest.json
+│   │   robots.txt
+│   │   
+│   └───i
+│           background.jpg
+│           background2.jpg
+│           border-bottom.png
+│           border-top.png
+│           green-pattern.png
+│           hint.png
+│           poster1.jpg
+│           poster2.jpg
+│           poster3.jpg
+│           qr-code.png
+│           screen.png
+│           switch.png
+│           trash-sprite.png
+│           
+└───src
+    │   App.css
+    │   App.test.tsx
+    │   App.tsx
+    │   index.css
+    │   index.tsx
+    │   mockData.ts
+    │   react-app-env.d.ts
+    │   reportWebVitals.ts
+    │   setupTests.ts
+    │   
+    ├───components
+    │   ├───Admin
+    │   │   │   ConfigureHalls.tsx
+    │   │   │   ConfigurePrices.tsx
+    │   │   │   ManageHalls.tsx
+    │   │   │   OpenSales.tsx
+    │   │   │   
+    │   │   ├───ConfStepWrapper
+    │   │   │       ConfStepWrapper.css
+    │   │   │       ConfStepWrapper.tsx
+    │   │   │       
+    │   │   ├───MovieModal
+    │   │   │       MovieModal.css
+    │   │   │       MovieModal.tsx
+    │   │   │       
+    │   │   └───SessionGrid
+    │   │           MovieList.tsx
+    │   │           SessionGrid.css
+    │   │           SessionGrid.tsx
+    │   │           SessionList.tsx
+    │   │           
+    │   ├───Button
+    │   │       Button.css
+    │   │       Button.tsx
+    │   │       
+    │   ├───Calendar
+    │   │       Calendar.css
+    │   │       Calendar.tsx
+    │   │       
+    │   ├───Footer
+    │   │       Footer.css
+    │   │       Footer.tsx
+    │   │       
+    │   ├───Header
+    │   │       AdminHeader.tsx
+    │   │       Header.css
+    │   │       Header.tsx
+    │   │       
+    │   ├───Modal
+    │   │       Modal.css
+    │   │       Modal.tsx
+    │   │       
+    │   ├───Movie
+    │   │       Movie.css
+    │   │       Movie.tsx
+    │   │       
+    │   ├───MovieList
+    │   │       MovieList.css
+    │   │       MovieList.tsx
+    │   │       
+    │   ├───Nav
+    │   │       Nav.css
+    │   │       Nav.tsx
+    │   │       
+    │   ├───Placeholder
+    │   │       Placeholder.css
+    │   │       Placeholder.tsx
+    │   │       
+    │   └───ProtectedRoute
+    │           ProtectedRoute.tsx
+    │           
+    ├───contexts
+    │       AuthContext.tsx
+    │       HallsContext.tsx
+    │       
+    ├───hooks
+    │       useMovies.ts
+    │       useSessionData.ts
+    │       
+    ├───module
+    │       cookies.ts
+    │       formatDate.ts
+    │       formatSeats.ts
+    │       
+    ├───pages
+    │   ├───Admin
+    │   │       Admin.css
+    │   │       Admin.tsx
+    │   │       
+    │   ├───HallPage
+    │   │       HallPage.css
+    │   │       HallPage.tsx
+    │   │       
+    │   ├───HomePage
+    │   │       HomePage.css
+    │   │       HomePage.tsx
+    │   │       
+    │   ├───Login
+    │   │       Login.css
+    │   │       Login.tsx
+    │   │       
+    │   ├───NotFoundPage
+    │   │       NotFoundPage.css
+    │   │       NotFoundPage.tsx
+    │   │       
+    │   ├───PaymentPage
+    │   │       PaymentPage.css
+    │   │       PaymentPage.tsx
+    │   │       
+    │   └───TicketPage
+    │           TicketPage.css
+    │           TicketPage.tsx
+    │           
+    └───style
+            normalize.css
+            

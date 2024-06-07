@@ -1,0 +1,11 @@
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 1.6rem;
+  color: #555;
+  padding: 50px 1.5rem;
+  margin-top: 3rem;
+  background: rgba(241, 235, 230, 0.95);
+}
