@@ -7,52 +7,42 @@ import axios from 'axios';
 import { useAuth } from '../../../contexts/AuthContext';
 import { useHalls } from '../../../contexts/HallsContext';
 import { v4 as uuidv4 } from 'uuid';
-import MovieList from './MovieList';
-import SessionList from './SessionList';
+import MovieList, { MovieType } from './MovieList/MovieList';
+import SessionList, { SessionType } from './SessionList/SessionList';
 import MovieModal from '../MovieModal/MovieModal';
 import './SessionGrid.css';
 import { formatDate, formatTimeToDate } from '../../../module/formatDate';
 
 /**
- * Интерфейс для фильма.
- */
-export interface Movie {
-  id: number;
-  title: string;
-  duration: number;
-  poster: string;
-}
-
-/**
- * Интерфейс для сеанса.
- */
-export interface Session {
-  id?: string; // id может быть необязательным для новых сеансов и строковым для временных идентификаторов
-  hall_id: number;
-  movie_id: number;
-  time: string; // Формат времени: "hh:mm:ss"
-  date: string; // Дата в формате "YYYY-MM-DD"
-  seats_status: string; // Состояние мест в формате JSON
-}
-
-/**
- * Компонент для управления сеткой сеансов.
- *
- * @returns {React.FC} Компонент сетки сеансов.
+ * Компонент SessionGrid предназначен для управления сеансами кинотеатра. 
+ * Включает функции для добавления, редактирования и удаления сеансов, а также взаимодействие с календарем и фильмами.
  */
 const SessionGrid: React.FC = () => {
-  const { halls } = useHalls();
+  const { halls, sessions, setSessions, fetchSessions } = useHalls();
   const { token } = useAuth();
-  const [movies, setMovies] = useState<Movie[]>([]);
-  const [sessions, setSessions] = useState<Session[]>([]);
+  const [movies, setMovies] = useState<MovieType[]>([]);
   const [deletedSessions, setDeletedSessions] = useState<string[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
-  const [confirmationModalVisible, setConfirmationModalVisible] = useState(false);
-  const [movieModalVisible, setMovieModalVisible] = useState(false); // Новое состояние для показа модального окна добавления фильма
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [notificationTitle, setNotificationTitle] = useState('');
+  const [movieModalVisible, setMovieModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [draggedSession, setDraggedSession] = useState<Session | null>(null);
-  const [draggedMovie, setDraggedMovie] = useState<Movie | null>(null);
+  const [draggedSession, setDraggedSession] = useState<SessionType | null>(null);
+  const [draggedMovie, setDraggedMovie] = useState<MovieType | null>(null);
   const [dragStartX, setDragStartX] = useState<number | null>(null);
+
+  /**
+   * Отображает уведомление с заданным заголовком и сообщением.
+   * 
+   * @param title Заголовок уведомления.
+   * @param message Сообщение уведомления.
+   */
+  const showNotification = (title: string, message: string) => {
+    setNotificationTitle(title);
+    setNotificationMessage(message);
+    setNotificationModalVisible(true);
+  };
 
   const movieColors = [
     '#caff85', '#85ff89', '#85ffd3', '#85e2ff',
@@ -65,7 +55,7 @@ const SessionGrid: React.FC = () => {
   }, [selectedDate]);
 
   /**
-   * Получает список фильмов.
+   * Загружает список фильмов с сервера.
    */
   const fetchMovies = async () => {
     try {
@@ -81,47 +71,27 @@ const SessionGrid: React.FC = () => {
   };
 
   /**
-   * Получает сеансы по выбранной дате.
-   *
-   * @param {Date} date - Выбранная дата.
-   */
-  const fetchSessionsByDate = async (date: Date) => {
-    try {
-      const formattedDate = formatDate(date, 'YYYY-MM-DD');
-      const response = await axios.get(`${process.env.REACT_APP_API_URL}/sessions/by-date`, {
-        params: { date: formattedDate },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setSessions(response.data);
-    } catch (error) {
-      console.error('Ошибка при загрузке сеансов:', error);
-    }
-  };
-
-  /**
-   * Сбрасывает состояние к последнему сохраненному.
+   * Сбрасывает состояние компонента, загружая данные фильмов и сеансов.
    */
   const resetState = async () => {
     await fetchMovies();
-    await fetchSessionsByDate(selectedDate);
+    await fetchSessions(selectedDate);
   };
 
   /**
-   * Обработчик сохранения конфигурации.
+   * Обработчик для сохранения изменений.
    */
   const handleSave = () => {
-    setConfirmationModalVisible(true);
+    setModalVisible(true);
   };
 
   /**
-   * Обработчик сохранения в модальном окне.
+   * Обработчик для подтверждения сохранения изменений через модальное окно.
    */
   const handleModalSave = async () => {
     try {
-      const updatedSessions = sessions.filter(session => session.id && !(typeof session.id === 'string' && session.id.startsWith('temp-')) && !deletedSessions.includes(session.id));
-      const newSessions = sessions.filter(session => session.id && (typeof session.id === 'string' && session.id.startsWith('temp-')));
+      const updatedSessions = sessions.filter(session => session.status === 'closed' && session.id && !(typeof session.id === 'string' && session.id.startsWith('temp-')) && !deletedSessions.includes(session.id));
+      const newSessions = sessions.filter(session => session.status === 'closed' && session.id && (typeof session.id === 'string' && session.id.startsWith('temp-')));
 
       await axios.put(`${process.env.REACT_APP_API_URL}/sessions`, updatedSessions, {
         headers: {
@@ -130,11 +100,13 @@ const SessionGrid: React.FC = () => {
       });
 
       for (const sessionId of deletedSessions) {
-        await axios.delete(`${process.env.REACT_APP_API_URL}/sessions/${sessionId}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        if (!(typeof sessionId === 'string' && sessionId.startsWith('temp-'))) {
+          await axios.delete(`${process.env.REACT_APP_API_URL}/sessions/${sessionId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+        }
       }
 
       await axios.post(`${process.env.REACT_APP_API_URL}/sessions`, newSessions.map(session => {
@@ -147,31 +119,25 @@ const SessionGrid: React.FC = () => {
       });
 
       setModalVisible(false);
-      setConfirmationModalVisible(false);
+      showNotification('Сохранение конфигурации', 'Сеансы успешно сохранены.');
     } catch (error) {
       console.error('Ошибка при сохранении сеансов:', error);
+      showNotification('Ошибка', 'Произошла ошибка при сохранении сеансов.');
     }
   };
 
   /**
-   * Обработчик закрытия модального окна.
+   * Закрывает модальное окно сохранения.
    */
   const handleModalClose = () => {
     setModalVisible(false);
   };
 
   /**
-   * Обработчик закрытия модального окна подтверждения.
-   */
-  const handleConfirmationModalClose = () => {
-    setConfirmationModalVisible(false);
-  };
-
-  /**
-   * Парсит время из строки в формат Date.
-   *
-   * @param {string} timeString - Строка времени.
-   * @returns {Date} Объект Date.
+   * Преобразует строку времени в объект Date.
+   * 
+   * @param timeString Строка времени в формате 'HH:mm:ss'.
+   * @returns Объект Date.
    */
   const parseTime = (timeString: string): Date => {
     const [hours, minutes, seconds] = timeString.split(':').map(Number);
@@ -182,49 +148,105 @@ const SessionGrid: React.FC = () => {
 
   /**
    * Обработчик начала перетаскивания сеанса.
-   *
-   * @param {React.DragEvent<HTMLDivElement>} e - Событие перетаскивания.
-   * @param {Session} session - Сеанс.
+   * 
+   * @param e Событие перетаскивания.
+   * @param session Сеанс, который перетаскивается.
    */
-  const handleDragStartSession = (e: React.DragEvent<HTMLDivElement>, session: Session) => {
+  const handleDragStartSession = (e: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, session: SessionType) => {
+    if (session.status !== 'closed') {
+      showNotification('Ошибка', 'Перетаскивание невозможно. Сеанс не закрыт.');
+      return;
+    }
     setDraggedSession(session);
-    setDragStartX(e.clientX);
-    e.dataTransfer.setDragImage(new Image(), 0, 0); // Отключаем копию элемента
+    if ('clientX' in e) {
+      setDragStartX(e.clientX);
+    } else {
+      setDragStartX(e.touches[0].clientX);
+    }
+    if ('dataTransfer' in e) {
+      e.dataTransfer.setDragImage(new Image(), 0, 0); // Отключаем копию элемента
+    }
   };
 
   /**
    * Обработчик начала перетаскивания фильма.
-   *
-   * @param {React.DragEvent<HTMLDivElement>} e - Событие перетаскивания.
-   * @param {Movie} movie - Фильм.
+   * 
+   * @param e Событие перетаскивания.
+   * @param movie Фильм, который перетаскивается.
    */
-  const handleDragStartMovie = (e: React.DragEvent<HTMLDivElement>, movie: Movie) => {
+  const handleDragStartMovie = (e: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, movie: MovieType) => {
     setDraggedMovie(movie);
-    setDragStartX(e.clientX);
-    e.dataTransfer.setDragImage(new Image(), 0, 0); // Отключаем копию элемента
+    if ('clientX' in e) {
+      setDragStartX(e.clientX);
+    } else {
+      setDragStartX(e.touches[0].clientX);
+    }
+    if ('dataTransfer' in e) {
+      e.dataTransfer.setDragImage(new Image(), 0, 0); // Отключаем копию элемента
+    }
   };
 
   /**
-   * Обработчик перетаскивания.
-   *
-   * @param {React.DragEvent<HTMLDivElement>} e - Событие перетаскивания.
+   * Обработчик, предотвращающий действие по умолчанию при перетаскивании.
+   * 
+   * @param e Событие перетаскивания.
    */
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
+    if ('dataTransfer' in e) {
+      e.dataTransfer.dropEffect = 'move';
+    }
   };
 
   /**
-   * Обработчик сброса перетаскиваемого элемента.
-   *
-   * @param {React.DragEvent<HTMLDivElement>} e - Событие перетаскивания.
-   * @param {number} hallId - Идентификатор зала.
+   * Проверяет пересечение двух сеансов.
+   * 
+   * @param session1 Первый сеанс.
+   * @param session2 Второй сеанс.
+   * @param movies Список фильмов.
+   * @returns True, если сеансы пересекаются.
    */
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>, hallId: number) => {
+  const sessionsOverlap = (session1: SessionType, session2: SessionType, movies: MovieType[]): boolean => {
+    const movie1 = movies.find(movie => movie.id === session1.movie_id);
+    const movie2 = movies.find(movie => movie.id === session2.movie_id);
+    if (!movie1 || !movie2) return false;
+
+    const start1 = parseTime(session1.time).getTime();
+    const end1 = start1 + movie1.duration * 60000;
+    const start2 = parseTime(session2.time).getTime();
+    const end2 = start2 + movie2.duration * 60000;
+
+    return start1 < end2 && start2 < end1;
+  };
+
+  /**
+   * Проверяет пересечение нового сеанса с существующими сеансами.
+   * 
+   * @param newSession Новый сеанс.
+   * @param sessions Список существующих сеансов.
+   * @param movies Список фильмов.
+   * @returns True, если новый сеанс пересекается с существующими.
+   */
+  const isOverlapWithExistingSessions = (newSession: SessionType, sessions: SessionType[], movies: MovieType[]): boolean => {
+    return sessions.some(session => session.hall_id === newSession.hall_id && session.id !== newSession.id && sessionsOverlap(session, newSession, movies));
+  };
+
+  /**
+   * Обработчик сброса перетаскиваемого элемента на таймлайн зала.
+   * 
+   * @param e Событие перетаскивания.
+   * @param hallId ID зала.
+   */
+  const handleDrop = (e: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>, hallId: number) => {
     if (!draggedMovie) return;
 
     const timeline = e.currentTarget.getBoundingClientRect();
-    const deltaX = e.clientX - timeline.left;
+    let deltaX;
+    if ('clientX' in e) {
+      deltaX = e.clientX - timeline.left;
+    } else {
+      deltaX = e.touches[0].clientX - timeline.left;
+    }
     const minutesDelta = Math.round((deltaX / timeline.width) * 1440);
     const startTime = new Date(selectedDate);
     startTime.setHours(0, 0, 0, 0);
@@ -232,34 +254,51 @@ const SessionGrid: React.FC = () => {
 
     const newTime = formatTimeToDate(startTime);
     const hall = halls.find(hall => hall.id === hallId);
-    const newSession: Session = {
+    const newSession: SessionType = {
       id: `temp-${uuidv4()}`,
       hall_id: hallId,
       movie_id: draggedMovie.id,
       time: newTime,
       date: formatDate(selectedDate, 'YYYY-MM-DD'),
       seats_status: hall ? JSON.stringify(hall.seats) : '[]',
+      status: 'closed'
     };
+
+    if (isOverlapWithExistingSessions(newSession, sessions, movies)) {
+      showNotification('Ошибка', 'Этот сеанс пересекается с другим сеансом. Пожалуйста, выберите другое время.');
+      return;
+    }
+
     setSessions([...sessions, newSession]);
     setDraggedMovie(null);
     setDragStartX(null);
   };
 
   /**
-   * Обработчик перетаскивания элемента.
-   *
-   * @param {React.DragEvent<HTMLDivElement>} e - Событие перетаскивания.
+   * Обработчик для перемещения сеанса при перетаскивании.
+   * 
+   * @param e Событие перетаскивания.
    */
-  const handleDrag = (e: React.DragEvent<HTMLDivElement>) => {
+  const handleDrag = (e: React.DragEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
     if (!dragStartX || !draggedSession) return;
 
-    const deltaX = e.clientX - dragStartX;
+    let deltaX;
+    if ('clientX' in e) {
+      deltaX = e.clientX - dragStartX;
+    } else {
+      deltaX = e.touches[0].clientX - dragStartX;
+    }
     const timeline = e.currentTarget.parentElement!.getBoundingClientRect();
-    const minutesDelta = Math.round((deltaX / timeline.width) * 1440); // Используем фактическую ширину таймлайна
+    const minutesDelta = Math.round((deltaX / timeline.width) * 1440);
     const startTime = parseTime(draggedSession.time);
     startTime.setMinutes(startTime.getMinutes() + minutesDelta);
 
     const newTime = formatTimeToDate(startTime);
+
+    const newSession = { ...draggedSession, time: newTime };
+    if (isOverlapWithExistingSessions(newSession, sessions, movies)) {
+      return;
+    }
 
     setSessions(prevSessions => prevSessions.map(session =>
       session.id === draggedSession.id ? { ...session, time: newTime } : session
@@ -267,35 +306,40 @@ const SessionGrid: React.FC = () => {
   };
 
   /**
-   * Обработчик окончания перетаскивания элемента.
+   * Обработчик окончания перетаскивания сеанса или фильма.
    */
   const handleDragEnd = () => {
     setDraggedSession(null);
-    setDraggedMovie(null); // Сброс draggedMovie при окончании перетаскивания
+    setDraggedMovie(null);
     setDragStartX(null);
   };
 
   /**
    * Обработчик удаления сеанса.
-   *
-   * @param {string} sessionId - Идентификатор сеанса.
+   * 
+   * @param sessionId ID сеанса.
    */
   const handleDeleteSession = (sessionId: string) => {
+    const session = sessions.find(s => s.id === sessionId);
+    if (session && session.status !== 'closed') {
+      showNotification('Ошибка', 'Удаление невозможно. Сеанс не закрыт.');
+      return;
+    }
     setDeletedSessions(prev => [...prev, sessionId]);
     setSessions(prevSessions => prevSessions.filter(session => session.id !== sessionId));
   };
 
   /**
-   * Обработчик клика на кнопку добавления фильма.
+   * Обработчик нажатия кнопки добавления фильма.
    */
   const handleAddMovieClick = () => {
     setMovieModalVisible(true);
   };
 
   /**
-   * Обработчик сохранения фильма в модальном окне.
-   *
-   * @param {object} movie - Данные фильма.
+   * Обработчик сохранения нового фильма через модальное окно.
+   * 
+   * @param movie Объект с данными нового фильма.
    */
   const handleMovieModalSave = async (movie: { title: string, duration: number, origin: string, poster: string, synopsis: string }) => {
     try {
@@ -307,6 +351,7 @@ const SessionGrid: React.FC = () => {
       setMovies([...movies, response.data]);
     } catch (error) {
       console.error('Ошибка при добавлении фильма:', error);
+      showNotification('Ошибка', 'Произошла ошибка при добавлении фильма.');
     }
   };
 
@@ -316,9 +361,11 @@ const SessionGrid: React.FC = () => {
         <Calendar selectedDate={selectedDate} onDateChange={setSelectedDate} />
       </div>
 
-      <p className="conf-step__paragraph">
-        <Button type="accent" onClick={handleAddMovieClick}>Добавить фильм</Button>
-      </p>
+      <div className="conf-step__paragraph">
+        <fieldset className="conf-step__buttons">
+          <Button type="accent" onClick={handleAddMovieClick}>Добавить фильм</Button>
+        </fieldset>
+      </div>
 
       <MovieList movies={movies} colors={movieColors} onDragStart={handleDragStartMovie} onDragEnd={handleDragEnd} />
 
@@ -335,7 +382,7 @@ const SessionGrid: React.FC = () => {
         onDeleteSession={handleDeleteSession}
       />
 
-      <fieldset className="conf-step__buttons text-center">
+      <fieldset className="conf-step__buttons">
         <Button type="regular" onClick={resetState}>Отмена</Button>
         <Button type="accent" onClick={handleSave}>Сохранить</Button>
       </fieldset>
@@ -343,25 +390,25 @@ const SessionGrid: React.FC = () => {
       <Modal
         show={modalVisible}
         onClose={handleModalClose}
-        title="Сохранение конфигурации"
-        message="Сеансы успешно сохранены."
-        inputVisible={false}
-        onSave={handleModalSave}
-      />
-
-      <Modal
-        show={confirmationModalVisible}
-        onClose={handleConfirmationModalClose}
         title="Подтверждение сохранения"
         message="Вы уверены, что хотите сохранить изменения?"
         inputVisible={false}
         onSave={handleModalSave}
       />
-      
+
       <MovieModal
         show={movieModalVisible}
         onClose={() => setMovieModalVisible(false)}
         onSave={handleMovieModalSave}
+      />
+
+      <Modal
+        show={notificationModalVisible}
+        onClose={() => setNotificationModalVisible(false)}
+        title={notificationTitle}
+        message={notificationMessage}
+        inputVisible={false}
+        notification={true}
       />
     </ConfStepWrapper>
   );

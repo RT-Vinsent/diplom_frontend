@@ -133,6 +133,43 @@
 
 
 
+@media (max-width: 600px) {
+  .conf-step__wrapper {
+    padding: 18px 18px 18px 64px;
+  }
 
+  .conf-step__header {
+    padding: 18px 60px 18px 80px;
+  }
 
+  .conf-step__header::after {
+    right: 24px;
+  }
 
+  .conf-step__header .conf-step__title::before,
+  .conf-step::before, 
+  .conf-step__header::before {
+    left: 45px;
+  }
+
+  .conf-step__header .conf-step__title {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .conf-step__wrapper {
+    padding-left: 50px;
+    padding-right: 14px;
+  }
+
+  .conf-step__header {
+    padding-left: 70px;
+  }
+
+  .conf-step__header .conf-step__title::before,
+  .conf-step::before, 
+  .conf-step__header::before {
+    left: 35px;
+  }
+}

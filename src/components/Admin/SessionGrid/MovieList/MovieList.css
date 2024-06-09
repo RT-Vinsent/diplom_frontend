@@ -1,0 +1,46 @@
+/*
+↓  Добавленыне фильмы
+*/
+.conf-step__movies {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 15px;
+}
+
+.conf-step__movies .conf-step__movie {
+  position: relative;
+  width: 260px;
+  /* flex-grow: 1; */
+  min-height: 52px;
+  padding: 8px 8px 8px 48px;
+  background: #FFEB85;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
+  cursor: pointer;
+}
+
+.conf-step__movies .conf-step__movie-poster {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 38px;
+  height: 50px;
+  user-select: none;
+  pointer-events: none;
+}
+
+.conf-step__movies .conf-step__movie-title {
+  font-weight: 500;
+  font-size: 1.4rem;
+}
+
+.conf-step__movies .conf-step__movie-duration {
+  font-size: 1.4rem;
+  color: rgba(0, 0, 0, 0.7);
+}
+
+/*
+↑  Добавленыне фильмы
+*/

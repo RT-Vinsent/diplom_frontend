@@ -13,7 +13,10 @@ interface ModalProps {
   message?: string;
   inputPlaceholder?: string;
   inputVisible?: boolean;
+  notification?: boolean;
   children?: React.ReactNode;
+  textNo?: string;
+  textYes?: string;
 }
 
 /**
@@ -30,7 +33,10 @@ const Modal: React.FC<ModalProps> = ({
   message,
   inputPlaceholder,
   inputVisible = true,
-  children
+  notification = false,
+  children,
+  textNo = 'Отмена',
+  textYes = 'Сохранить'
 }) => {
   const [inputValue, setInputValue] = React.useState('');
 
@@ -54,7 +60,7 @@ const Modal: React.FC<ModalProps> = ({
       <div className="modal">
         <h2>{title}</h2>
         {message && <p>{message}</p>}
-        {inputVisible && (
+        {inputVisible && !notification && (
           <input
             type="text"
             value={inputValue}
@@ -64,8 +70,14 @@ const Modal: React.FC<ModalProps> = ({
         )}
         {children}
         <div className="modal__buttons">
-          <Button type="regular" onClick={onClose}>Отмена</Button>
-          <Button type="accent" onClick={handleSave}>Сохранить</Button>
+          {notification ? (
+            <Button type="accent" onClick={onClose}>OK</Button>
+          ) : (
+            <>
+              <Button type="regular" onClick={onClose}>{textNo}</Button>
+              <Button type="accent" onClick={handleSave}>{textYes}</Button>
+            </>
+          )}
         </div>
       </div>
     </div>

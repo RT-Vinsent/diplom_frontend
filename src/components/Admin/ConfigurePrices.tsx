@@ -3,6 +3,8 @@ import ConfStepWrapper from '../Admin/ConfStepWrapper/ConfStepWrapper';
 import Button from '../Button/Button';
 import Modal from '../Modal/Modal';
 import { useHalls } from '../../contexts/HallsContext';
+import HallSelector from './HallSelector/HallSelector';
+import axios from 'axios';
 
 /**
  * Компонент для конфигурации цен на билеты.
@@ -17,6 +19,8 @@ const ConfigurePrices: React.FC = () => {
   const [initialRegularPrice, setInitialRegularPrice] = useState<number>(0);
   const [initialVipPrice, setInitialVipPrice] = useState<number>(0);
   const [modalVisible, setModalVisible] = useState(false);
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => {
     if (halls.length > 0 && selectedHallId === null) {
@@ -41,10 +45,20 @@ const ConfigurePrices: React.FC = () => {
    */
   const handleSave = async () => {
     if (selectedHallId !== null) {
-      await updateHallPrices(selectedHallId, regularPrice, vipPrice);
-      setModalVisible(false);
-      setInitialRegularPrice(regularPrice);
-      setInitialVipPrice(vipPrice);
+      try {
+        await updateHallPrices(selectedHallId, regularPrice, vipPrice);
+        setNotificationMessage('Цены успешно сохранены.');
+      } catch (error) {
+        if (axios.isAxiosError(error) && error.response?.status === 400) {
+          setNotificationMessage(error.response.data.message);
+        } else {
+          setNotificationMessage('Ошибка при сохранении цен.');
+        }
+      } finally {
+        setModalVisible(false);
+        setNotificationModalVisible(true);
+        handleCancel();
+      }
     }
   };
 
@@ -59,45 +73,48 @@ const ConfigurePrices: React.FC = () => {
   return (
     <ConfStepWrapper title="Конфигурация цен">
       <p className="conf-step__paragraph">Выберите зал для конфигурации:</p>
-      <ul className="conf-step__selectors-box">
-        {halls.map(hall => (
-          <li key={hall.id}>
-            <input
-              type="radio"
-              className="conf-step__radio"
-              name="prices-hall"
-              value={hall.name}
-              checked={selectedHallId === hall.id}
-              onChange={() => setSelectedHallId(hall.id)}
-            />
-            <span className="conf-step__selector">{hall.name}</span>
-          </li>
-        ))}
-      </ul>
+      <HallSelector halls={halls} selectedHallId={selectedHallId} setSelectedHallId={setSelectedHallId} name="configure-price" />
+
       <p className="conf-step__paragraph">Установите цены для типов кресел:</p>
       <div className="conf-step__legend">
-        <label className="conf-step__label">Цена, рублей
-          <input
-            type="number"
-            className="conf-step__input"
-            value={regularPrice}
-            onChange={(e) => setRegularPrice(Number(e.target.value))}
-            placeholder="0"
-          />
-        </label> за <span className="conf-step__chair conf-step__chair_standart"></span> обычные кресла
+        <div className="conf-step__price-wrapper">
+          <label className="conf-step__label">
+            <span className="conf-step__label-text">Цена, рублей</span>
+            <input
+              type="number"
+              className="conf-step__input"
+              value={regularPrice}
+              onChange={(e) => setRegularPrice(Number(e.target.value))}
+              placeholder="0"
+            />
+          </label>
+          <div className="conf-step__text">
+            <span>за</span>
+            <span className="conf-step__chair conf-step__chair_standart"></span>
+            <span>обычные кресла</span>
+          </div>
+        </div>
       </div>
       <div className="conf-step__legend">
-        <label className="conf-step__label">Цена, рублей
-          <input
-            type="number"
-            className="conf-step__input"
-            value={vipPrice}
-            onChange={(e) => setVipPrice(Number(e.target.value))}
-            placeholder="0"
-          />
-        </label> за <span className="conf-step__chair conf-step__chair_vip"></span> VIP кресла
+        <div className="conf-step__price-wrapper">
+          <label className="conf-step__label">
+            <span className="conf-step__label-text">Цена, рублей</span>
+            <input
+              type="number"
+              className="conf-step__input"
+              value={vipPrice}
+              onChange={(e) => setVipPrice(Number(e.target.value))}
+              placeholder="0"
+            />
+          </label>
+          <div className="conf-step__text">
+            <span>за</span>
+            <span className="conf-step__chair conf-step__chair_vip"></span>
+            <span>VIP кресла</span>
+          </div>
+        </div>
       </div>
-      <fieldset className="conf-step__buttons text-center">
+      <fieldset className="conf-step__buttons">
         <Button type="regular" onClick={handleCancel}>Отмена</Button>
         <Button type="accent" onClick={() => setModalVisible(true)}>Сохранить</Button>
       </fieldset>
@@ -105,9 +122,17 @@ const ConfigurePrices: React.FC = () => {
         show={modalVisible}
         onClose={() => setModalVisible(false)}
         title="Сохранение конфигурации"
-        message="Цены успешно сохранены."
+        message="Вы уверены, что хотите сохранить изменения?"
         inputVisible={false}
         onSave={handleSave}
+      />
+      <Modal
+        show={notificationModalVisible}
+        onClose={() => setNotificationModalVisible(false)}
+        title="Уведомление"
+        message={notificationMessage}
+        inputVisible={false}
+        notification={true}
       />
     </ConfStepWrapper>
   );

@@ -5,6 +5,7 @@ import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { useHalls } from '../../contexts/HallsContext';
 import Modal from '../Modal/Modal';
+import HallSelector from './HallSelector/HallSelector';
 
 /**
  * Компонент для конфигурации залов.
@@ -20,6 +21,8 @@ const ConfigureHalls: React.FC = () => {
   const [initialSeats, setInitialSeats] = useState<string[][]>([]); // Состояние для хранения первоначальной конфигурации
   const { token } = useAuth();
   const [modalVisible, setModalVisible] = useState(false);
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => {
     if (halls.length > 0 && selectedHallId === null) {
@@ -139,8 +142,15 @@ const ConfigureHalls: React.FC = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      setModalVisible(true);
+      setNotificationMessage('Конфигурация зала успешно сохранена.');
+      setNotificationModalVisible(true);
     } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 400) {
+        setNotificationMessage(error.response.data.message);
+      } else {
+        setNotificationMessage('Ошибка при сохранении конфигурации зала.');
+      }
+      setNotificationModalVisible(true);
       console.error('Ошибка при сохранении конфигурации зала:', error);
     }
   };
@@ -155,21 +165,7 @@ const ConfigureHalls: React.FC = () => {
   return (
     <ConfStepWrapper title="Конфигурация залов">
       <p className="conf-step__paragraph">Выберите зал для конфигурации:</p>
-      <ul className="conf-step__selectors-box">
-        {halls.map(hall => (
-          <li key={hall.id}>
-            <input
-              type="radio"
-              className="conf-step__radio"
-              name="chairs-hall"
-              value={hall.name}
-              checked={selectedHallId === hall.id}
-              onChange={() => setSelectedHallId(hall.id)}
-            />
-            <span className="conf-step__selector">{hall.name}</span>
-          </li>
-        ))}
-      </ul>
+      <HallSelector halls={halls} selectedHallId={selectedHallId} setSelectedHallId={setSelectedHallId} name="sales-hall" />
       <p className="conf-step__paragraph">Укажите количество рядов и максимальное количество кресел в ряду:</p>
       <div className="conf-step__legend">
         <label className="conf-step__label">Рядов, шт
@@ -194,9 +190,11 @@ const ConfigureHalls: React.FC = () => {
       </div>
       <p className="conf-step__paragraph">Теперь вы можете указать типы кресел на схеме зала:</p>
       <div className="conf-step__legend">
-        <span className="conf-step__chair conf-step__chair_standart"></span> — обычные кресла
-        <span className="conf-step__chair conf-step__chair_vip"></span> — VIP кресла
-        <span className="conf-step__chair conf-step__chair_disabled"></span> — заблокированные (нет кресла)
+        <div className="conf-step__chair-text">
+          <span><span className="conf-step__chair conf-step__chair_standart"></span> — обычные кресла</span>
+          <span><span className="conf-step__chair conf-step__chair_vip"></span> — VIP кресла</span>
+          <span><span className="conf-step__chair conf-step__chair_disabled"></span> — заблокированные (нет кресла)</span>
+        </div>
         <p className="conf-step__hint">Чтобы изменить вид кресла, нажмите по нему левой кнопкой мыши</p>
       </div>
       <div className="conf-step__hall">
@@ -214,17 +212,17 @@ const ConfigureHalls: React.FC = () => {
           ))}
         </div>
       </div>
-      <fieldset className="conf-step__buttons text-center">
+      <fieldset className="conf-step__buttons">
         <Button type="regular" onClick={handleCancel}>Отмена</Button>
         <Button type="accent" onClick={handleSave}>Сохранить</Button>
       </fieldset>
       <Modal
-        show={modalVisible}
-        onClose={() => setModalVisible(false)}
-        title="Сохранение конфигурации"
-        message="Конфигурация зала успешно сохранена."
+        show={notificationModalVisible}
+        onClose={() => setNotificationModalVisible(false)}
+        title="Уведомление"
+        message={notificationMessage}
         inputVisible={false}
-        onSave={() => setModalVisible(false)}
+        notification={true}
       />
     </ConfStepWrapper>
   );

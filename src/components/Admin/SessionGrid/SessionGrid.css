@@ -1,94 +1,4 @@
 /*
-↓  Добавленыне фильмы
-*/
-.conf-step__movies {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-start;
-}
-
-.conf-step__movies .conf-step__movie {
-  position: relative;
-  width: calc((100% - 30px) / 3);
-  min-height: 52px;
-  padding: 8px 8px 8px 48px;
-  background: #FFEB85;
-  border: 1px solid rgba(0, 0, 0, 0.3);
-  box-sizing: border-box;
-  cursor: pointer;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(3n + 2) {
-  margin: 0 15px;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(n + 4) {
-  margin-top: 15px;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(1) {
-  background-color: #caff85;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(2) {
-  background-color: #85ff89;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(3) {
-  background-color: #85ffd3;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(4) {
-  background-color: #85e2ff;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(5) {
-  background-color: #8599ff;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(6) {
-  background-color: #ba85ff;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(7) {
-  background-color: #ff85fb;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(8) {
-  background-color: #ff85b1;
-}
-
-.conf-step__movies .conf-step__movie:nth-of-type(9) {
-  background-color: #ffa285;
-}
-
-.conf-step__movies .conf-step__movie-poster {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 38px;
-  height: 50px;
-}
-
-.conf-step__movies .conf-step__movie-title {
-  font-weight: 500;
-  font-size: 1.4rem;
-}
-
-.conf-step__movies .conf-step__movie-duration {
-  font-size: 1.4rem;
-  color: rgba(0, 0, 0, 0.7);
-}
-
-/*
-↑  Добавленыне фильмы
-*/
-
-
-
-
-
-/*
 ↓  Сеансы в зале
 */
 .conf-step__seances-hall {
@@ -109,16 +19,17 @@
   margin-top: 21px;
   height: 40px;
   box-sizing: content-box;
-  width: calc(1440px * 0.5);
+  width: 100%;
 }
 
 .conf-step__seances-movie {
   position: absolute;
   height: 40px;
-  padding: 10px 2px 10px 10px;
+  padding: 10px 2px;
   border: 1px solid rgba(0, 0, 0, 0.3);
   box-shadow: 0 0 3px 1px #0000001a;
   cursor: grab;
+  text-align: center;
 }
 
 .conf-step__seances-movie:hover {
@@ -140,7 +51,7 @@
   background: #ffa1a1;
   border: none;
   border-radius: 50%;
-  
+
   transform: translate(50%, -50%);
   cursor: pointer;
   z-index: 1;
@@ -161,12 +72,14 @@
 
 .conf-step__seances-movie .conf-step__seances-movie-start {
   bottom: -33px;
-  left: -14px;
+  left: 0;
+  transform: translateX(-50%);
 }
 
 .conf-step__seances-movie .conf-step__seances-movie-end {
   top: -30px;
-  right: -14px;
+  right: 0;
+  transform: translateX(50%);
 }
 
 .conf-step__seances-movie::before,
@@ -197,4 +110,43 @@
   display: flex;
   width: 100%;
   justify-content: center;
+}
+
+.thumbnail {
+  display: none;
+  position: fixed;
+  pointer-events: none;
+  width: 38px;
+  height: 50px;
+  background-color: rgba(0, 0, 0, 0.5);
+  background-size: cover;
+}
+
+
+@media (max-width: 700px) {
+  .conf-step__seances-movie .conf-step__seances-movie-start,
+  .conf-step__seances-movie .conf-step__seances-movie-end {
+    font-size: 0.8rem;
+  }
+
+  .conf-step__seances-hall {
+    margin: 35px 0px;
+  }
+
+  .conf-step__seances-timeline,
+  .conf-step__seances-movie {
+    height: 65px;
+  }
+
+  .conf-step__seances-movie {
+    padding: 1px;
+  }
+
+  .conf-step__seances-movie-title {
+    width: 100%;
+    height: 100%;
+    font-size: 10px;
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+  }
 }

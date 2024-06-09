@@ -1,54 +1,92 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ConfStepWrapper from '../Admin/ConfStepWrapper/ConfStepWrapper';
 import Button from '../Button/Button';
 import Modal from '../Modal/Modal';
-import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import { useHalls } from '../../contexts/HallsContext';
+import HallSelector from '../Admin/HallSelector/HallSelector';
+
+type ModalAction = 'open' | 'closed';
 
 /**
- * Компонент для открытия продаж билетов.
- *
- * @returns {React.FC} Компонент для открытия продаж билетов.
+ * Компонент OpenSales предназначен для управления продажами билетов в залах.
+ * Позволяет открывать и закрывать продажи билетов для выбранного зала.
  */
 const OpenSales: React.FC = () => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [notificationModalVisible, setNotificationModalVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+  const [modalAction, setModalAction] = useState<ModalAction>('open');
+  const [selectedHallId, setSelectedHallId] = useState<number | null>(null);
   const { token } = useAuth();
+  const { halls, updateSessionStatus } = useHalls();
+
+  useEffect(() => {
+    if (halls.length > 0 && selectedHallId === null) {
+      setSelectedHallId(halls[0].id);
+    }
+  }, [halls, selectedHallId]);
 
   /**
-   * Обработчик открытия продаж билетов.
+   * Обработчик действия по открытию или закрытию продаж.
+   * 
+   * @param action Действие, которое нужно выполнить ('open' или 'closed').
    */
-  const handleOpenSales = async () => {
+  const handleSalesAction = async (action: ModalAction) => {
+    if (!selectedHallId) return;
+
     try {
-      await axios.post(`${process.env.REACT_APP_API_URL}/sessions/open`, {}, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setConfirmationMessage('Продажи успешно открыты.');
+      const message = await updateSessionStatus(selectedHallId, action);
+      setNotificationMessage(message);
     } catch (error) {
-      console.error('Ошибка при открытии продаж:', error);
-      setConfirmationMessage('Ошибка при открытии продаж.');
+      console.error(`Ошибка при ${action === 'open' ? 'открытии' : 'закрытии'} продаж:`, error);
+      setNotificationMessage(`Ошибка при ${action === 'open' ? 'открытии' : 'закрытии'} продаж.`);
     } finally {
       setModalVisible(false);
+      setNotificationModalVisible(true);
     }
   };
 
+  /**
+   * Открывает модальное окно подтверждения действия.
+   * 
+   * @param action Действие, которое нужно подтвердить ('open' или 'closed').
+   */
+  const openModal = (action: ModalAction) => {
+    setModalAction(action);
+    setModalVisible(true);
+  };
+
   return (
-    <ConfStepWrapper title="Открыть продажи">
-      <div className="text-center">
-        <p className="conf-step__paragraph">Всё готово, теперь можно:</p>
-        <Button type="accent" onClick={() => setModalVisible(true)}>Открыть продажу билетов</Button>
-      </div>
+    <ConfStepWrapper title="Управление продажами">
+      <p className="conf-step__paragraph">Выберите зал для изменения статуса продаж:</p>
+      <HallSelector halls={halls} selectedHallId={selectedHallId} setSelectedHallId={setSelectedHallId} name="open-sales" />
+
+      <p className="conf-step__paragraph">
+        Продажи в зале можно как открыть, так и закрыть. Продажи на сеанс с уже проданными билетами не закрываются.
+      </p>
+
+      <fieldset className="conf-step__buttons">
+        <Button type="accent" onClick={() => openModal('open')}>Открыть продажу билетов</Button>
+        <Button type="regular" onClick={() => openModal('closed')}>Закрыть продажу билетов</Button>
+      </fieldset>
+
       <Modal
         show={modalVisible}
         onClose={() => setModalVisible(false)}
-        title="Подтверждение открытия продаж"
-        message="Вы уверены, что хотите открыть продажи билетов?"
+        title={`Подтверждение ${modalAction === 'open' ? 'открытия' : 'закрытия'} продаж`}
+        message={`Вы уверены, что хотите ${modalAction === 'open' ? 'открыть' : 'закрыть'} продажи билетов для выбранного зала?`}
         inputVisible={false}
-        onSave={handleOpenSales}
+        onSave={() => handleSalesAction(modalAction)}
       />
-      {confirmationMessage && <p className="conf-step__confirmation">{confirmationMessage}</p>}
+      <Modal
+        show={notificationModalVisible}
+        onClose={() => setNotificationModalVisible(false)}
+        title="Уведомление"
+        message={notificationMessage}
+        inputVisible={false}
+        notification={true}
+      />
     </ConfStepWrapper>
   );
 };

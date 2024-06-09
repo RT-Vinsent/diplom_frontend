@@ -1,0 +1,69 @@
+
+/*
+↓  Радиокнопки выбор Зала
+*/
+.conf-step__selector-label {
+  cursor: pointer;
+}
+
+.conf-step__selector {
+  cursor: pointer;
+}
+
+.conf-step__selectors-box {
+  font-size: 0;
+  list-style: none;
+  margin-bottom: 15px;
+}
+
+.conf-step__selectors-box li {
+  position: relative;
+  display: inline-block;
+  font-size: 1.2rem;
+}
+
+.conf-step__selectors-box .conf-step__radio {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  /* z-index: 1; */
+  width: 80px;
+  height: 42px;
+  opacity: 0;
+}
+
+.conf-step__selectors-box .conf-step__selector {
+  position: relative;
+  display: block;
+  padding: 13px 21px;
+  box-shadow: 0px 3px 3px rgba(0, 0, 0, 0.24), 0px 0px 3px rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+  border: none;
+  background-color: rgba(255, 255, 255, 0.45);
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 1.4rem;
+  transition-property: background-color;
+  transition-duration: .5s;
+  transition-timing-function: ease;
+  /* z-index: 1; */
+}
+
+.conf-step__selectors-box .conf-step__radio:checked+.conf-step__selector {
+  background-color: #FFFFFF;
+  box-shadow: 0px 6px 8px rgba(0, 0, 0, 0.24), 0px 2px 2px rgba(0, 0, 0, 0.24), 0px 0px 2px rgba(0, 0, 0, 0.12);
+  transform: scale(1.1);
+  font-weight: 900;
+  font-size: 1.4rem;
+  z-index: 1;
+}
+
+.conf-step__selectors-box .conf-step__radio:hover+.conf-step__selector {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/*
+↑ Радиокнопки выбор Зала
+*/
